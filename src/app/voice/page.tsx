@@ -12,6 +12,7 @@ import { z } from "zod";
 import { DotStream, DotPulse } from "@/components/ui/Loaders";
 import Image from "next/image";
 import { VisaTypeSelector } from "@/components/visa-type";
+import Navbar from "@/components/home/NavBar";
 
 
 interface Msg {
@@ -56,6 +57,18 @@ export default function Voice() {
     const [ assesment, setAssesment ] = useState<z.infer<typeof VisaInterviewFeedback> |  null>(null)
     const [ userUnpaid, setUserUnpaid ] = useState(false);
     const [ visaType, setVisaType]  = useState('F1 Visa')
+
+    // Extract company and role from the URL
+    const [company, setCompany] = useState("Unknown Company");
+    const [role, setRole] = useState("Unknown Role");
+
+    useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        setCompany(searchParams.get("company") || "Unknown Company");
+        setRole(searchParams.get("role") || "Unknown Role");
+    }, []); // Runs only on the client
+
+    console.log("Company:", company, "Role:", role);
     
     // supabase user initialization
     useEffect(() => {
@@ -351,44 +364,33 @@ export default function Voice() {
     return (
         <div className="landing-page w-full h-screen">
             
-        {/* NAVBAR */}
-        <div className="flex justify-center w-full px-2">
-            <div className="flex flex-row w-full max-w-7xl justify-between items-center gap-3 p-3 bg-white bg-opacity-50 shadow-2xl rounded-xl mt-2 "> 
-                <a href="/" className="flex items-center font-extrabold italic text-2xl"> 
-                    <Image 
-                        src='/images/headerImg.png'
-                        alt="Logo"
-                        width={40}
-                        height={40}
-                        className="mr-1"
-                    />
-                    Visa<div className="text-blue-500">Prep</div>AI 
-                </a>
-                <div className="flex flex-row gap-2">
-                    {user && <UserDropdown/> }
-                </div>
-            </div>
+        <Navbar />
+
+        
+        <div className="w-full justify-center items-center mt-20">
+            <h1 className="text-center text-3xl">{company} - {role}</h1>
         </div>
         
-        <div className="flex flex-col items-center gap-4 p-3 mt-4">
+        <div className="w-full flex flex-row justify-center items-center gap-10 p-3 mt-20">
+
             
+            <div>
             <CircleOut stream={stream}/>
             
             {/* Control Buttons */}
             {
                 agentState === "preconnected" && (
-                    <div className="flex flex-row items-center gap-3">
+                    <div className="flex flex-row gap-3 justify-center items-center">
                         <Button 
-                            className={`connect-button uppercase border border-gray-500 [box-shadow:0.0rem_0.25rem_#000] ${false? 'translate-x-[+0.25rem] translate-y-[+0.25rem] [box-shadow:0.0rem_0.0rem_#000] bg-blue-600': 'bg-blue-500'} hover:bg-blue-600`}
+                            className={`connect-button bg-tech-purple uppercase border border-gray-500 [box-shadow:0.0rem_0.25rem_#000] ${false? 'translate-x-[+0.25rem] translate-y-[+0.25rem] [box-shadow:0.0rem_0.0rem_#000] bg-blue-600': ''} hover:bg-blue-600`}
                             onClick={init}>
                             Start Interview
                         </Button>
-                        <VisaTypeSelector type={visaType} setVisaType={setVisaType}/>
+                        {/* <VisaTypeSelector type={visaType} setVisaType={setVisaType}/> */}
                     </div>
                 )
             }
             {
-                
                 agentState === "connecting" && (
                     <div>
                         <DotPulse color="#1E88E5" />
@@ -405,6 +407,7 @@ export default function Voice() {
                     </div>
                 )
             }
+            </div>
             
             {/* Messages */}
             <div className="overflow-y-auto h-96 max-w-2xl w-full bg-white bg-opacity-30 shadow-2xl p-4 mt-2 rounded-lg">
